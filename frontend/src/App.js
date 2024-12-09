@@ -1,20 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import api from './api/api';
+import React from 'react';
+import { Provider } from 'react-redux';
+import { BrowserRouter } from 'react-router-dom';
+import store from './redux/store';
+import Application from './containers/application';
 
-function App() {
-    const [message, setMessage] = useState('');
-
-    useEffect(() => {
-        api.get('/hello/')
-            .then(response => setMessage(response.data.message))
-            .catch(error => console.error(error));
-    }, []);
-
-    return (
-        <div className="App">
-            <h1>{message}</h1>
-        </div>
-    );
-}
+const App = () => {
+    return(
+        <Provider store={store}>
+            <BrowserRouter>
+                <Application />
+            </BrowserRouter>
+        </Provider>
+    )
+};
 
 export default App;
