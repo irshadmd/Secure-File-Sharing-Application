@@ -1,52 +1,55 @@
-import React, { useState } from "react";
-import { Box, Typography, TextField, Button, Paper } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react"
+import { Box, Typography, TextField, Button, Paper } from "@mui/material"
+import { useNavigate } from "react-router-dom"
+import { useSelector } from "react-redux"
+import api from "../../api/api"
+import { toast } from "react-toastify"
 
 const MFAVerification = () => {
-  const [otp, setOtp] = useState("");
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const [otp, setOtp] = useState("")
+  const [error, setError] = useState("")
+  const navigate = useNavigate()
 
-  // Simulating the secret stored on the server (for demo purposes)
-  const storedSecret = "JBSWY3DPEHPK3PXP"; // This should be securely fetched from your server
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleOtpChange = (e) => {
-    setOtp(e.target.value);
-  };
+    setOtp(e.target.value)
+  }
 
-  // Simulate OTP verification (replace with backend verification in practice)
-  const verifyOtp = async (otp) => {
+  useEffect(()=> {
+    if(!token) navigate('/login')
+  },[])
+
+  const token = useSelector((state) => state.auth.token)
+  console.log(token)
+  
+
+  const handleSubmit = async(e) => {
+    e.preventDefault()
+    
+    setIsLoading(true)
     try {
-      // In a real-world scenario, send the OTP to your backend for verification
-      const isValid = await verifyOtpOnServer(otp);
-      if (isValid) {
-        navigate("/");
+      const response = await api.post(
+        "/auth/mfa/validate/",
+        { "otp": otp},{
+          headers: {
+          Authorization: 'Bearer ' + token
+        }}
+      )
+      console.log(otp)
+      if (response.status === 200) {
+          localStorage.setItem("token", token)
+          toast.success("Validated Successfully")
+          navigate("/")
       } else {
-        setError("Invalid OTP, please try again.");
+        toast.error(`An error occurred while verifying OTP.`)
       }
-    } catch (err) {
-      setError("An error occurred while verifying OTP.");
+    } catch (error) {
+      console.log(error)
+      toast.error(`Error:${error}`)
     }
-  };
-
-  // Simulate OTP verification on the server side
-  const verifyOtpOnServer = async (otp) => {
-    // const speakeasy = require("speakeasy");
-
-    // // Verify the OTP using the secret key and the entered OTP
-    // const verified = speakeasy.totp.verify({
-    //   secret: storedSecret,
-    //   encoding: "base32",
-    //   token: otp,
-    // });
-
-    // return verified;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // verifyOtp(otp);
-  };
+    setIsLoading(false)  
+  }
 
   return (
     <Paper elevation={3} sx={{ p: 4, width: "100%", maxWidth: 400 }}>
@@ -64,28 +67,28 @@ const MFAVerification = () => {
             </Typography>
             )}
             <TextField
-            fullWidth
-            label="Enter OTP"
-            variant="outlined"
-            margin="normal"
-            type="text"
-            value={otp}
-            onChange={handleOtpChange}
-            error={!!error}
-            helperText={error && "Please enter a valid OTP"}
+              fullWidth
+              label="Enter OTP"
+              variant="outlined"
+              margin="normal"
+              type="text"
+              value={otp}
+              onChange={handleOtpChange}
+              error={!!error}
+              helperText={error && "Please enter a valid OTP"}
             />
             <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 2 }}
-            disabled={otp.length < 4}
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 2 }}
+              disabled={otp.length < 4 || isLoading}
             >
             Verify OTP
             </Button>
         </Box>
     </Paper>
-  );
-};
+  )
+}
 
 export default MFAVerification

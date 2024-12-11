@@ -1,9 +1,9 @@
 import { combineReducers } from '@reduxjs/toolkit'
 
-import authenticationReducer from '../containers/authentication/reducer'
+import authReducer from '../containers/login/slice'
 
 const rootReducer = combineReducers({
-    authentication: authenticationReducer,
+    auth: authReducer,
 })
 
 export default rootReducer

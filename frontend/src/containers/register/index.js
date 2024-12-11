@@ -9,55 +9,77 @@ import {
   InputLabel,
   Select,
   MenuItem,
-} from "@mui/material";
+  CircularProgress
+} from "@mui/material"
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"
+import api from "../../api/api";
+import { toast } from 'react-toastify'
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    name: "",
     email: "",
     password: "",
     confirmPassword: "",
-    role: "USER", // Default role
-  });
+    role: "USER",
+  })
 
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({})
+  const [isLoading, setIsLoading] = useState(false)
 
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData({ ...formData, [name]: value })
   };
 
   const validate = () => {
     let tempErrors = {};
-    if (!formData.firstName) tempErrors.firstName = "First Name is required.";
-    if (!formData.lastName) tempErrors.lastName = "Last Name is required.";
-    if (!formData.email) tempErrors.email = "Email is required.";
+    if (!formData.name) tempErrors.name = "Name is required."
+    if (!formData.email) tempErrors.email = "Email is required."
     if (!/\S+@\S+\.\S+/.test(formData.email))
-      tempErrors.email = "Email is invalid.";
+      tempErrors.email = "Email is invalid."
     if (!formData.password)
-      tempErrors.password = "Password is required.";
+      tempErrors.password = "Password is required."
     if (formData.password !== formData.confirmPassword)
-      tempErrors.confirmPassword = "Passwords do not match.";
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
-  };
+      tempErrors.confirmPassword = "Passwords do not match."
+    setErrors(tempErrors)
+    return Object.keys(tempErrors).length === 0
+  }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) =>  {
+    e.preventDefault()
     if (validate()) {
-      console.log("Form Data:", formData);
-      // Handle form submission (e.g., API call)
+      setIsLoading(true)
+      try {
+        const response = await api.post(
+          "/auth/register/",
+          { 
+            "name": formData.name,
+            "email": formData.email,
+            "password": formData.password,
+            "role": formData.role
+           }
+        )
+        if (response.status === 201) {
+          toast.success("Registered Successfully")
+          navigate("/login");
+        } else {
+          toast.error(`Error:${response?.email?.[0]}`)
+        }
+      } catch (error) {
+        console.log(error)
+        toast.error(`Error:${error}`)
+      }
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleLoginBtn = () => {
-    navigate("/login");
-  };
+    navigate("/login")
+  }
 
   return (
     <Paper elevation={3} sx={{ p: 4, width: "100%", maxWidth: 400 }}>
@@ -76,28 +98,15 @@ const Register = () => {
           margin="normal"
           required
           fullWidth
-          id="firstName"
-          label="First Name"
-          name="firstName"
+          id="name"
+          label="Name"
+          name="name"
           autoComplete="given-name"
           autoFocus
-          value={formData.firstName}
+          value={formData.name}
           onChange={handleChange}
-          error={!!errors.firstName}
-          helperText={errors.firstName}
-        />
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          id="lastName"
-          label="Last Name"
-          name="lastName"
-          autoComplete="family-name"
-          value={formData.lastName}
-          onChange={handleChange}
-          error={!!errors.lastName}
-          helperText={errors.lastName}
+          error={!!errors.name}
+          helperText={errors.name}
         />
         <TextField
           margin="normal"
@@ -154,14 +163,30 @@ const Register = () => {
             <MenuItem value="GUEST">GUEST</MenuItem>
           </Select>
         </FormControl>
-        <Button
-          type="submit"
-          fullWidth
-          variant="contained"
-          sx={{ mt: 3, mb: 2 }}
-        >
-          Register
-        </Button>
+        <Box sx={{ m: 1, position: 'relative' }}>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            disabled={isLoading}
+            sx={{ mt: 3, mb: 2 }}
+          >
+            Register
+          </Button>
+          {isLoading && (
+            <CircularProgress
+              size={24}
+              sx={{
+                color: 'green',
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                marginTop: '-12px',
+                marginLeft: '-12px',
+              }}
+            />
+          )}
+        </Box>
         <Button
           fullWidth
           variant="outlined"

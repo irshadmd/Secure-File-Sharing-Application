@@ -9,6 +9,8 @@ import {
 } from "@mui/material";
 import MFARegistration from "../register/MFARegistration"
 import MFAVerification from "../login/MFAVerification"
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const Application = () => {
     
@@ -24,6 +26,7 @@ const Application = () => {
             backgroundRepeat: "no-repeat",
             padding: 2,
         }}>
+            <ToastContainer />
             <Routes>
                 <Route
                     path="/"
