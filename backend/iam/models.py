@@ -19,7 +19,6 @@ class User(AbstractBaseUser):
     ROLE_CHOICES = [
         ('ADMIN', 'Admin'),
         ('USER', 'User'),
-        ('GUEST', 'Guest'),
     ]
 
     email = models.EmailField(unique=True)
