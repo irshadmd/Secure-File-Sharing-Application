@@ -19,14 +19,14 @@ const ProtectedRoute = ({ children }) => {
             })
             .catch(() => {
                 dispatch(logout())
-                navigate('/login')
+                navigate('/auth/login')
                 console.error('Failed to fetch user info')
             })
         }
     }, [])
 
     if (!token) {
-        return <Navigate to="/login" />
+        return <Navigate to="/auth/login" />
     }
 
     return children

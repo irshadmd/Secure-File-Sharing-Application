@@ -65,7 +65,7 @@ const Register = () => {
         )
         if (response.status === 201) {
           toast.success("Registered Successfully")
-          navigate("/login");
+          navigate("/auth/login");
         } else {
           toast.error(`Error:${response?.email?.[0]}`)
         }
@@ -78,7 +78,7 @@ const Register = () => {
   }
 
   const handleLoginBtn = () => {
-    navigate("/login")
+    navigate("/auth/login")
   }
 
   return (

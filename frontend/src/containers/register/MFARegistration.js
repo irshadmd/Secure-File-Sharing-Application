@@ -46,7 +46,7 @@ const MFARegistration = () => {
   }
 
   useEffect(()=> {
-    if(!token) navigate('/login')
+    if(!token) navigate('/auth/login')
     fetchQRCode()
   },[])
 

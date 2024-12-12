@@ -56,9 +56,9 @@ const Login = () => {
           dispatch(loginSuccess({ token, user }))
           toast.success("Login Successfully")
           if(user.is_mfa_enabled){
-            navigate('/mfa_verification')
+            navigate('/auth/mfa_verification')
           }else{
-            navigate('/mfa_registration')
+            navigate('/auth/mfa_registration')
           }
         } else {
           toast.error(`Error:${response?.email?.[0]}`)
@@ -72,7 +72,7 @@ const Login = () => {
   };
 
   const handleRegisterBtn = () => {
-    navigate("/register");
+    navigate("/auth/register");
   };
 
   return (

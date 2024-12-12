@@ -17,7 +17,7 @@ const MFAVerification = () => {
   }
 
   useEffect(()=> {
-    if(!token) navigate('/login')
+    if(!token) navigate('/auth/login')
   },[])
 
   const token = useSelector((state) => state.auth.token)
