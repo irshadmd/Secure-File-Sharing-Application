@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom"
 import api from "../../api/api";
 import { toast } from 'react-toastify'
 import { useDispatch } from "react-redux"
-import { loginSuccess } from "./slice";
+import { loginSuccess } from "../application/slice";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" })

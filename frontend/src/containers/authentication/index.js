@@ -1,23 +1,14 @@
-
 import React from 'react';
-
 import { useSelector } from 'react-redux';
-import { Navigate } from 'react-router-dom';
 
 const Authentication = () => {
-  const token = localStorage.getItem("token")
-  const user = useSelector((state) => state.auth.user)
+    const user = useSelector((state) => state.auth.user);
 
-  console.log(user)
-    return(
-      <>
-        {!token?
-          <Navigate to='/login' />
-          :<>testing</>
-        }
-      </>
-  )
-}
+    if (!user) {
+        return <div>Loading...</div>;
+    }
 
-export default Authentication
+    return <div>Welcome, {user.name}!</div>;
+};
 
+export default Authentication;

@@ -11,6 +11,7 @@ import MFARegistration from "../register/MFARegistration"
 import MFAVerification from "../login/MFAVerification"
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import ProtectedRoute from "./ProtectedRoute"
 
 const Application = () => {
     
@@ -30,7 +31,11 @@ const Application = () => {
             <Routes>
                 <Route
                     path="/"
-                    element={<Authentication />}
+                    element={
+                        <ProtectedRoute>
+                            <Authentication />
+                        </ProtectedRoute>
+                    }
                 />
                 <Route
                     path="/register"
