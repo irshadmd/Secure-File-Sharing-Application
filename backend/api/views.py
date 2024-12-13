@@ -12,11 +12,13 @@ class FileUploadView(APIView):
 
     def post(self, request):
         file = request.FILES.get('file')
-        print(file.name)
         if not file:
             return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
 
         encrypted_file, key = encrypt_file(file)
+        
+        # Reset the file pointer of encrypted_file before passing it to the serializer
+        encrypted_file.seek(0)
         serializer = FileSerializer(data={'name': file.name, 'file': encrypted_file})
         
         if serializer.is_valid():
@@ -32,18 +34,6 @@ class FileListView(APIView):
         serializer = FileSerializer(files, many=True)
         return Response(serializer.data)
 
-class FileDetailView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, pk):
-        try:
-            file = File.objects.get(pk=pk, uploaded_by=request.user)
-        except File.DoesNotExist:
-            return Response({'error': 'File not found'}, status=status.HTTP_404_NOT_FOUND)
-        
-        serializer = FileSerializer(file)
-        return Response(serializer.data)
-
 class FileDownloadView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -53,7 +43,8 @@ class FileDownloadView(APIView):
         except File.DoesNotExist:
             return Response({'error': 'File not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        decrypted_file = decrypt_file(file.file.path, file.encrypted_key)
+        decrypted_file = decrypt_file(file.file, file.encrypted_key)
+
         response = FileResponse(decrypted_file, content_type='application/octet-stream')
         response['Content-Disposition'] = f'attachment; filename="{file.name}"'
         return response

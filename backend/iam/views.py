@@ -39,6 +39,15 @@ class GetUserView(APIView):
     def get(self, request):
         user = request.user
         return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+    
+class GetUserListView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        user = request.user
+        users = User.objects.exclude(email=user.email)
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class GenerateMFASecretView(APIView):
     permission_classes = [IsAuthenticated]

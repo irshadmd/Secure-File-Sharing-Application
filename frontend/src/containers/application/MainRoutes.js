@@ -2,6 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
 import FileList from '../FileList';
+import SecureAppBar from '../../components/SecureAppBar';
 
 const MainRoutes = () => {
     const user = useSelector((state) => state.auth.user);
@@ -11,11 +12,11 @@ const MainRoutes = () => {
     }
 
     return (<>
-      <div>Welcome, {user.name}!</div>
-      <FileList />
+      <SecureAppBar />
       <Routes>
-        <Route path='test' element={<>testing</>}/>
-        <Route path='test/asg' element={<>/test/asg</>}/>
+        <Route index element={<FileList />}/>
+        <Route path='shared' element={<>testing</>}/>
+        <Route path='quickshare' element={<>/test/asg</>}/>
       </Routes>
     </>);
 };

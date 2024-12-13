@@ -1,3 +1,4 @@
+from io import BytesIO
 from cryptography.fernet import Fernet
 
 def encrypt_file(file):
@@ -11,10 +12,19 @@ def encrypt_file(file):
 
     return file, key
 
-def decrypt_file(file_path, key):
+def decrypt_file(file, key):
     fernet = Fernet(key)
-    with open(file_path, 'rb') as file:
-        encrypted_data = file.read()
+
+    # Read the encrypted content from the file object
+    file.seek(0)
+    encrypted_data = file.read()
+
+    # Decrypt the data
     decrypted_data = fernet.decrypt(encrypted_data)
-    return decrypted_data
+    
+    # Return a file-like object of the decrypted data
+    decrypted_instance = BytesIO(decrypted_data)
+    decrypted_instance.seek(0)
+
+    return decrypted_instance
 

@@ -23,11 +23,13 @@ import {
   FormControl,
   InputLabel,
   Stack,
-  Container
+  Container,
+  Autocomplete
 } from '@mui/material'
 import { MoreVert, CloudUpload } from '@mui/icons-material'
 import { styled } from '@mui/material/styles'
-import { fetchFiles, uploadFile } from './slice'
+import { downloadFile, fetchFiles, setSelectedFile, shareFile, uploadFile } from './slice'
+import { fetchUsersList } from '../application/slice'
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -43,21 +45,24 @@ const VisuallyHiddenInput = styled('input')({
 
 const FileList = () => {
   const files = useSelector(state => state.files)
+  const selectedFile = useSelector(state => state.files.selected.file)
+  const users = useSelector(state => state.auth.userslist)
+
   const dispatch = useDispatch()
   const [anchorEl, setAnchorEl] = useState(null)
-  const [selectedFile, setSelectedFile] = useState(null)
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
-  const [shareUserId, setShareUserId] = useState('')
-  const [sharePermission, setSharePermission] = useState('view')
+  const [shareUserId, setShareUserId] = useState(null)
+  const [sharePermission, setSharePermission] = useState('VIEW')
   const [shareExpiration, setShareExpiration] = useState('')
 
   useEffect(() => {
     dispatch(fetchFiles())
-  }, [dispatch])
+    dispatch(fetchUsersList())
+  }, [])
 
   const handleMenuClick = (event, file) => {
     setAnchorEl(event.currentTarget)
-    setSelectedFile(file)
+    dispatch(setSelectedFile({file: file}))
   }
 
   const handleMenuClose = () => {
@@ -72,7 +77,7 @@ const FileList = () => {
 
   const handleDownload = () => {
     if (selectedFile) {
-    //   dispatch(downloadFile(selectedFile.id))
+      dispatch(downloadFile(selectedFile.id, selectedFile.name))
     console.log(selectedFile)
     }
     handleMenuClose()
@@ -80,12 +85,11 @@ const FileList = () => {
 
   const handleShareSubmit = () => {
     if (selectedFile) {
-    //   dispatch(shareFile(selectedFile.id, shareUserId, sharePermission, shareExpiration))
-    console.log(selectedFile)
+      dispatch(shareFile(selectedFile.id, shareUserId, sharePermission, shareExpiration))
     }
     setShareDialogOpen(false)
-    setShareUserId('')
-    setSharePermission('view')
+    setShareUserId(null)
+    setSharePermission('VIEW')
     setShareExpiration('')
   }
 
@@ -95,8 +99,6 @@ const FileList = () => {
       dispatch(uploadFile(file))
     }
   }
-
-  console.log(files)
 
   return (
     <Container>
@@ -166,37 +168,44 @@ const FileList = () => {
         <Dialog open={shareDialogOpen} onClose={() => setShareDialogOpen(false)}>
           <DialogTitle>Share File</DialogTitle>
           <DialogContent>
-            <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <TextField
-                label="User ID"
-                value={shareUserId}
-                onChange={(e) => setShareUserId(e.target.value)}
+            <FormControl fullWidth margin="normal">
+              <Autocomplete
+                value={users?.find(user => user?.id === shareUserId) || null}
+                onChange={(event, newValue) => {
+                  setShareUserId(newValue ? newValue.id : '');
+                }}
+                options={users ?? []}
+                getOptionLabel={(option) => `${option?.name} (${option?.email})`}
+                renderInput={(params) => <TextField {...params} label="Select User" />}
                 fullWidth
               />
-              <FormControl fullWidth>
-                <InputLabel>Permission</InputLabel>
-                <Select
-                  value={sharePermission}
-                  label="Permission"
-                  onChange={(e) => setSharePermission(e.target.value)}
-                >
-                  <MenuItem value="view">View</MenuItem>
-                  <MenuItem value="download">Download</MenuItem>
-                </Select>
-              </FormControl>
+            </FormControl>
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="share-permission-label">Permission</InputLabel>
+              <Select
+                labelId="share-permission-label"
+                id="share-permission"
+                value={sharePermission}
+                onChange={(e) => setSharePermission(e.target.value)}
+                label="Permission"
+              >
+                <MenuItem value="VIEW">View</MenuItem>
+                <MenuItem value="DOWNLOAD">Download</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl fullWidth margin="normal">
               <TextField
-                label="Expiration Date"
                 type="datetime-local"
+                label="Expiration Date"
                 value={shareExpiration}
                 onChange={(e) => setShareExpiration(e.target.value)}
                 InputLabelProps={{ shrink: true }}
-                fullWidth
               />
-            </Box>
+            </FormControl>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setShareDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleShareSubmit} variant="contained">Share</Button>
+            <Button onClick={handleShareSubmit}>Share</Button>
           </DialogActions>
         </Dialog>
       </Paper>
