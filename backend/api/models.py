@@ -10,7 +10,6 @@ class File(models.Model):
     name = models.CharField(max_length=255)
     file = models.FileField(upload_to='uploads/')
     encrypted_key = models.BinaryField()
-    public_url = models.URLField(blank=True, null=True)
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
@@ -35,4 +34,12 @@ class FileShare(models.Model):
     def __str__(self):
         return f"{self.file.name} shared with {self.shared_with.email}"
 
+class ShareableLink(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    file = models.ForeignKey(File, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
 
+    def is_expired(self):
+        return timezone.now() > self.expires_at

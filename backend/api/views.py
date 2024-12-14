@@ -2,10 +2,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from .models import File, FileShare
-from .serializers import FileSerializer, FileShareSerializer, FileSharedSerializer
+from .models import File, FileShare, ShareableLink
+from .serializers import FileSerializer, FileShareSerializer, FileSharedSerializer, ShareableLinkSerializer
 from .encryption import encrypt_file, decrypt_file
 from django.http import FileResponse
+from datetime import *
+from django.utils import timezone
 
 class FileUploadView(APIView):
     permission_classes = [IsAuthenticated]
@@ -92,3 +94,39 @@ class SharedWithMeListView(APIView):
         serializer = FileSharedSerializer(shared_files, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class GenerateShareableLinkView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        file_id = request.data.get('file_id')
+
+        if not file_id:
+            return Response({'error': 'file_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            file = File.objects.get(pk=file_id, uploaded_by=request.user)
+        except File.DoesNotExist:
+            return Response({'error': 'File not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        expires_at = timezone.now() + timezone.timedelta(hours=1)
+        shareable_link = ShareableLink.objects.create(
+            file=file,
+            created_by=request.user,
+            expires_at=expires_at
+        )
+
+        serializer = ShareableLinkSerializer(shareable_link)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class AccessShareableLinkView(APIView):
+    def get(self, request, link_id):
+        try:
+            shareable_link = ShareableLink.objects.get(pk=link_id)
+        except ShareableLink.DoesNotExist:
+            return Response({'error': 'Link not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if shareable_link.is_expired():
+            return Response({'error': 'This link has expired.'}, status=status.HTTP_410_GONE)
+
+        serializer = ShareableLinkSerializer(shareable_link)
+        return Response(serializer.data)

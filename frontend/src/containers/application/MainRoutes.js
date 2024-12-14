@@ -4,6 +4,7 @@ import { Route, Routes } from 'react-router-dom';
 import FileList from '../FileList';
 import SecureAppBar from '../../components/SecureAppBar';
 import SharedList from '../SharedList';
+import QuickShare from '../QuickShare';
 
 const MainRoutes = () => {
     const user = useSelector((state) => state.auth.user);
@@ -17,7 +18,7 @@ const MainRoutes = () => {
       <Routes>
         <Route index element={<FileList />}/>
         <Route path='shared' element={<SharedList />}/>
-        <Route path='quickshare' element={<>/test/asg</>}/>
+        <Route path='quickshare' element={<QuickShare />}/>
       </Routes>
     </>);
 };
