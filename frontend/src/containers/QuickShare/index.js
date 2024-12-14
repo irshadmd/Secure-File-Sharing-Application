@@ -77,7 +77,7 @@ const QuickShare = () => {
             color: '#2D3748',
             fontSize: { md: '2rem' },
         }}>
-            Simple File Sharing!
+            Quick File Sharing!
         </Typography>
         
         <Typography variant="h5" color="text.secondary" gutterBottom sx={{ mb: 4 }}>

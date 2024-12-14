@@ -71,6 +71,7 @@ export const uploadFile = (file) => async (dispatch) => {
       },
     })
     dispatch(fetchFiles())
+    toast.success('Uploaded Successfully!')
   } catch (error) {
     toast.error(`Error uploading file:${error}`)
     console.error('Error uploading file:', error)
