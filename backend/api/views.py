@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .models import File, FileShare
-from .serializers import FileSerializer, FileShareSerializer
+from .serializers import FileSerializer, FileShareSerializer, FileSharedSerializer
 from .encryption import encrypt_file, decrypt_file
 from django.http import FileResponse
 
@@ -71,15 +71,24 @@ class FileShareAccessView(APIView):
         if file_share.is_expired():
             return Response({'error': 'This share has expired.'}, status=status.HTTP_403_FORBIDDEN)
 
-        if file_share.permission == 'view':
+        file = File.objects.get(pk=file_share.file.id)
+        if file_share.permission == 'VIEW':
             serializer = FileSerializer(file_share.file)
             return Response(serializer.data)
-        elif file_share.permission == 'download':
-            return self.download_file(file_share.file)
+        elif file_share.permission == 'DOWNLOAD':
+            return self.download_file(file)
 
     def download_file(self, file):
-        decrypted_file = decrypt_file(file.file.path, file.encrypted_key)
+        decrypted_file = decrypt_file(file.file, file.encrypted_key)
         response = FileResponse(decrypted_file, content_type='application/octet-stream')
         response['Content-Disposition'] = f'attachment; filename="{file.name}"'
         return response
+
+class SharedWithMeListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        shared_files = FileShare.objects.filter(shared_with=request.user)
+        serializer = FileSharedSerializer(shared_files, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 

@@ -1,4 +1,5 @@
-from datetime import timezone
+from datetime import *
+from django.utils import timezone
 import uuid
 from django.db import models
 

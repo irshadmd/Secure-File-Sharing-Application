@@ -13,3 +13,10 @@ class FileShareSerializer(serializers.ModelSerializer):
         fields = ['id', 'file', 'shared_with', 'permission', 'expiration_time']
         read_only_fields = ['id']
 
+class FileSharedSerializer(serializers.ModelSerializer):
+    file = FileSerializer()
+    class Meta:
+        model = FileShare
+        fields = ['id', 'file', 'shared_with', 'permission', 'expiration_time']
+        read_only_fields = ['id']
+
